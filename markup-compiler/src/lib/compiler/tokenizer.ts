@@ -18,23 +18,17 @@ const Specifcation: any[] = [
   [/^\[/, '['],
   [/^\]/, ']'],
   [/^\<\//, '</'],
-  [/^\</, '<'],
+  [/^</, '<'],
   [/^>/, '>'],
   [/^\//, '/'],
 
-  // keywords
-
-  // numbers
-  [/^0[x][0-9a-fA-F]+/, 'HEXNUMBER'],
-  [/^\d+\.?\d*/, 'NUMBER'],
-
   // identifiers
-  [/^\w+/, 'IDENTIFIER'],
-
+  [/^[a-z,A-Z]\w+/, 'IDENTIFIER'],
 
   // strings
   [/^"[^"]*"/, 'STRING'],
   [/^'[^']*'/, 'STRING'],
+  [/^\w+/, 'TEXT'],
 ];
 
 export interface IToken {

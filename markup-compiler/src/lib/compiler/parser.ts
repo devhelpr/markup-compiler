@@ -1,5 +1,6 @@
 import {
   IASTNode,
+  IASTTextNode,
   IASTTree,
 } from '../interfaces/ast';
 import { Body } from './constants';
@@ -37,15 +38,20 @@ export class Parser {
     const tagName = this._lookahead.value;
     this._eat("IDENTIFIER");
     this._eat(">");
-    let body : IASTTree | IASTNode | false = false;
+    let body : IASTTree | IASTTextNode | false = false;
     if (this._lookahead.type !== "</") {
       if (this._lookahead.type === "<") {
         body = this.getMarkup();
       } else {
         body = {
-          type: this._lookahead.type,
+          type: "TEXT",
+          value : this._lookahead.value
         }
-        this._eat("IDENTIFIER");
+        if (this._lookahead.type === "TEXT") {
+          this._eat("TEXT");
+        } else {
+          this._eat("IDENTIFIER");
+        }
       }
     }
     this._eat("</");
