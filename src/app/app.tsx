@@ -1,12 +1,19 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import styles from './app.module.css';
-import NxWelcome from './nx-welcome';
+
+import { compileMarkup } from "@devhelpr/markup-compiler";
+import { useEffect, useState } from "react";
 
 export function App() {
+  const [result, setResult] = useState<string>("");
+  useEffect(() => {
+    const ast = compileMarkup("<hello></hello>");
+    if (ast) {
+      setResult(ast.type);
+    }
+  },[])
   return (
     <>
-      <NxWelcome title="markup-compiler" />
-      <div />
+    {result.toString()}
     </>
   );
 }
