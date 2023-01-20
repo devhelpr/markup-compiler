@@ -1,5 +1,6 @@
 export interface IASTNode {
   type: string;
+  tagName: string;
 }
 
 export interface IASTIdentifierNode extends IASTNode {
@@ -12,5 +13,6 @@ export interface IASTTextNode extends IASTNode {
 
 export interface IASTTree {
   type: string;
-  body: IASTTree | IASTTextNode | false;
+  tagName: string;
+  body: IASTNode[] | false;
 }

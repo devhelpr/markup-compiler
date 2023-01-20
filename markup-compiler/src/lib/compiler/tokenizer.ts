@@ -17,7 +17,7 @@ const Specifcation: any[] = [
   [/^\./, '.'],
   [/^\[/, '['],
   [/^\]/, ']'],
-  [/^\<\//, '</'],
+  [/^<\//, '</'],
   [/^</, '<'],
   [/^>/, '>'],
   [/^\//, '/'],
@@ -28,7 +28,7 @@ const Specifcation: any[] = [
   // strings
   [/^"[^"]*"/, 'STRING'],
   [/^'[^']*'/, 'STRING'],
-  [/^\w+/, 'TEXT'],
+  [/^(\w| |^<>(<\/))+/, 'TEXT'],
 ];
 
 export interface IToken {
@@ -48,13 +48,16 @@ export class Tokenizer {
   hasMoreTokens = () => {
     return this.cursor < this.string.length;
   };
-  getNextToken = (): IToken | null => {
+  getNextToken = (specificNextToken?: string[]): IToken | null => {
     if (!this.hasMoreTokens()) {
       return null;
     }
     const string = this.string.slice(this.cursor);
 
     for (const [regexp, tokenType] of Specifcation) {
+      if (specificNextToken && specificNextToken.indexOf(tokenType) === -1) {
+        continue;
+      }
       const tokenValue = this.match(regexp as RegExp, string);
       if (tokenValue == null) {
         continue;

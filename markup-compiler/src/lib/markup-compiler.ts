@@ -4,7 +4,8 @@ export function compileMarkup(markup: string) {
   try {
     const markupParser = new Parser();
     return markupParser.parse(markup);
-  } catch {
+  } catch (error) {
+    console.error(error);
     return false;
   }
 }
