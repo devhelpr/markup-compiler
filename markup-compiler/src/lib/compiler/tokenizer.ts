@@ -23,7 +23,7 @@ const Specifcation: any[] = [
   [/^\//, '/'],
 
   // identifiers
-  [/^[a-z,A-Z]\w+/, 'IDENTIFIER'],
+  [/^[a-z,A-Z]\w*/, 'IDENTIFIER'],
 
   // strings
   [/^"[^"]*"/, 'STRING'],

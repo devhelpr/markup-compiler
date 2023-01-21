@@ -21,6 +21,14 @@ describe('MarkupCompiler', () => {
         <abcd>dit is een test</abcd>
       </markup>`)
     ).toBeTruthy();
+
+    expect(
+      compileMarkup(`
+      <div>
+        <h2>123hello</h2>
+        <p>dit is een test</p>
+      </div>`)
+    ).toBeTruthy();
   });
 
   it('should not return valid ast trees', () => {

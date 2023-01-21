@@ -16,3 +16,9 @@ npm publish --access public
 
 npm run test @devhelpr/markup-compiler
 npm run build @devhelpr/markup-compiler
+
+
+# TODO
+- [ ] support for self-closing tags like <br/> or <br />
+- [ ] support for attributes
+- [ ] deeper nesting of tags

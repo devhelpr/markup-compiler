@@ -6,20 +6,15 @@ import { useEffect, useState } from 'react';
 export function App() {
   const [result, setResult] = useState<string>('');
   useEffect(() => {
-    const ast = compileMarkup(
-      `<markup>
-      <test>123hello</test>
-      <abcd></abcd>
-    </markup>`
-    );
+    const ast = compileMarkup(`<div><h2>TITLE</h2><p>subtitle</p></div>`);
     console.log('ast', ast);
     if (ast) {
-      setResult(ast.type);
+      setResult(JSON.stringify(ast, null, 2));
     } else {
       setResult('error parsing');
     }
   }, []);
-  return <>{result.toString()}</>;
+  return <pre>{result.toString()}</pre>;
 }
 
 export default App;
