@@ -15,7 +15,6 @@ npm publish --access public
 # test library
 
 npm run test @devhelpr/markup-compiler
-npm run build @devhelpr/markup-compiler
 
 
 # TODO
