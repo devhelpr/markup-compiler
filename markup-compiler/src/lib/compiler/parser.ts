@@ -26,8 +26,9 @@ export class Parser {
       const tagName = this._lookahead.value;
       this._eat('IDENTIFIER');
       this._eat('>');
-      //console.log('root', tagName);
+
       const body = this.getMarkup();
+
       this._eat('</');
       const endTagName = this._lookahead.value;
       if (tagName !== endTagName) {
@@ -51,7 +52,6 @@ export class Parser {
     tagName?: string,
     level?: number
   ): IASTNode[] | IASTTree | false => {
-    //console.log('getMarkup', tagName, level);
     if (!this._lookahead) {
       return false;
     }
@@ -69,7 +69,7 @@ export class Parser {
         this._eat('>', ['TEXT', '</', '<']);
 
         const markupBody = this.getMarkup(tagName, (level ?? 0) + 1);
-        //console.log(tagName, markupBody);
+        //console.log('na this.getMarkup', level, tagName, markupBody);
         this._eat('</');
         const endTagName = this._lookahead.value;
         if (tagName !== endTagName) {
@@ -82,9 +82,9 @@ export class Parser {
         if (Array.isArray(markupBody)) {
           body = [...body, ...(markupBody as unknown as IASTNode[])];
         } else {
-          //throw new Error('Unexpected end of input, expected: "<".');
-          //body = markupBody as unknown as IASTTree;
-
+          if (level === undefined) {
+            return markupBody as unknown as IASTTree;
+          }
           return {
             type: 'Markup',
             tagName: tagName,
@@ -92,7 +92,6 @@ export class Parser {
           } as IASTTree;
         }
       }
-
       return {
         type: 'Markup',
         tagName: tagName,
