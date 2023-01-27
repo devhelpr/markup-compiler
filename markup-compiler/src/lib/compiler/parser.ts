@@ -21,112 +21,145 @@ export class Parser {
     if (this._tokenizer) {
       this._tokenizer.init(this._string);
       this._lookahead = this._tokenizer.getNextToken();
-
-      this._eat('<');
-      const tagName = this._lookahead.value;
-      this._eat('IDENTIFIER');
-      this._eat('>');
-
-      const body = this.getMarkup();
-
-      this._eat('</');
-      const endTagName = this._lookahead.value;
-      if (tagName !== endTagName) {
-        throw new SyntaxError(
-          `Unexpected token: "${endTagName}", expected: "${tagName}".`
-        );
-      }
-      this._eat('IDENTIFIER');
-      this._eat('>');
-
-      return {
-        type: 'Markup',
-        tagName: tagName,
-        body,
-      };
+      return this.getMarkup() as unknown as IASTTree;
     }
     return false;
   };
+  /*
+      <div>
+        <div>
+          <div>test</div>
+          <div>test</div>
+        </div>
+        <p>test</p>
+      </div>
+
+      <div>test</div>
+
+      <div>
+        <div>test</div>
+      </div>
+
+      <div>
+        <div>test</div>
+        <div>test</div>
+      </div>
+
+  */
 
   private getMarkup = (
     tagName?: string,
     level?: number
-  ): IASTNode[] | IASTTree | false => {
+  ): IASTNode[] | IASTTree | IASTTextNode | false => {
     if (!this._lookahead) {
       return false;
     }
-
-    let body: IASTNode[] | false = false;
-    if (this._lookahead.type === '<') {
-      while (this._lookahead && this._lookahead.type === '<') {
-        if (!body) {
-          body = [];
-        }
+    const tagStack: string[] = [];
+    let currentTagName = tagName || '';
+    let nodes: (IASTNode | IASTTextNode)[] = [];
+    let quit = false;
+    while (
+      this._lookahead &&
+      (this._lookahead.type === '<' || this._lookahead.type === '</') &&
+      !quit
+    ) {
+      if (this._lookahead.type === '<') {
+        // <
 
         this._eat('<');
         const tagName = this._lookahead.value;
-        this._eat('IDENTIFIER');
-        this._eat('>', ['TEXT', '</', '<']);
+        currentTagName = tagName;
+        tagStack.push(tagName);
 
-        const markupBody = this.getMarkup(tagName, (level ?? 0) + 1);
-        //console.log('na this.getMarkup', level, tagName, markupBody);
+        this._eat('IDENTIFIER');
+        this._eat('>', ['TEXT', '</', '<', null] as (string | null)[]);
+
+        if (this._lookahead.type === 'TEXT') {
+          console.log('TEXT', currentTagName, this._lookahead.value);
+          nodes.push({
+            type: 'TEXT',
+            tagName: currentTagName,
+            value: this._lookahead.value,
+          });
+          this._eat('TEXT');
+
+          this._eat('</');
+          const endTagName = this._lookahead.value;
+          const poppedtag = tagStack.pop();
+          if (poppedtag === undefined || poppedtag !== endTagName) {
+            throw new SyntaxError(
+              `Unexpected token: "${endTagName}", expected: "${currentTagName}".`
+            );
+          }
+          this._eat('IDENTIFIER');
+          this._eat('>');
+          if (tagStack.length === 0) {
+            quit = true;
+            if (nodes.length === 1 && nodes[0].type === 'TEXT') {
+              return {
+                type: 'Markup',
+                tagName: poppedtag,
+                value: (nodes[0] as unknown as IASTTextNode).value,
+              };
+            } else {
+              return {
+                type: 'Markup',
+                tagName: poppedtag,
+                body: nodes,
+              };
+            }
+          }
+        } else if (this._lookahead.type === '<') {
+          const markup = this.getMarkup(currentTagName, level ? level + 1 : 1);
+          if (markup !== false) {
+            if (Array.isArray(markup)) {
+              console.log(markup);
+              nodes = [...nodes, ...markup];
+            } else {
+              console.log(markup);
+              nodes.push(markup);
+            }
+          }
+        }
+      } else {
         this._eat('</');
         const endTagName = this._lookahead.value;
-        if (tagName !== endTagName) {
+        const poppedtag = tagStack.pop();
+        if (poppedtag === undefined || poppedtag !== endTagName) {
           throw new SyntaxError(
-            `Unexpected token: "${endTagName}", expected: "${tagName}".`
+            `Unexpected token: "${endTagName}", expected: "${poppedtag}".`
           );
         }
         this._eat('IDENTIFIER');
         this._eat('>');
-        if (Array.isArray(markupBody)) {
-          body = [...body, ...(markupBody as unknown as IASTNode[])];
-        } else {
-          if (level === undefined) {
-            return markupBody as unknown as IASTTree;
+        if (tagStack.length === 0) {
+          quit = true;
+          if (nodes.length === 1 && nodes[0].type === 'TEXT') {
+            return {
+              type: 'Markup',
+              tagName: poppedtag,
+              value: (nodes[0] as unknown as IASTTextNode).value,
+            };
+          } else {
+            return {
+              type: 'Markup',
+              tagName: poppedtag,
+              body: nodes,
+            };
           }
-          return {
-            type: 'Markup',
-            tagName: tagName,
-            body: markupBody as unknown as IASTNode[] | IASTTree | false,
-          } as IASTTree;
         }
       }
-      return {
-        type: 'Markup',
-        tagName: tagName,
-        body: body as unknown as IASTNode[] | IASTTree | false,
-      } as IASTTree;
-    } else {
-      if (this._lookahead.type === '</' && tagName) {
-        body = [
-          {
-            type: 'EMPTY',
-            tagName: tagName,
-          } as IASTNode,
-        ];
-      } else if (this._lookahead.type === 'TEXT' && tagName) {
-        body = [
-          {
-            type: 'TEXT',
-            tagName: tagName,
-            value: this._lookahead.value,
-          } as IASTTextNode,
-        ];
-
-        this._eat('TEXT');
-      } else {
-        throw new Error(
-          `Unexpected end of input, expected: "TEXT" or "IDENTIFIER". received: "${this._lookahead.type}" with tagName ${tagName}.`
-        );
-      }
     }
-
-    return body;
+    if (tagStack.length > 0) {
+      throw new SyntaxError(
+        `Unexpected items still on stack: ${tagStack.length}.`
+      );
+    }
+    return nodes;
   };
 
   _isEndOfCode = false;
-  _eat = (tokenType: string, specificNextToken?: string[]) => {
+  _eat = (tokenType: string, specificNextToken?: (string | null)[]) => {
     const token = this._lookahead;
     if (token === null) {
       throw new SyntaxError(
