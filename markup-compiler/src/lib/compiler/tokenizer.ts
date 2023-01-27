@@ -21,6 +21,7 @@ const Specifcation: any[] = [
   [/^</, '<'],
   [/^>/, '>'],
   [/^\//, '/'],
+  [/^=/, '='],
 
   // identifiers
   [/^[a-z,A-Z]\w*/, 'IDENTIFIER'],
