@@ -48,7 +48,7 @@ export class Tokenizer {
   hasMoreTokens = () => {
     return this.cursor < this.string.length;
   };
-  getNextToken = (specificNextToken?: string[]): IToken | null => {
+  getNextToken = (specificNextToken?: (string | null)[]): IToken | null => {
     if (!this.hasMoreTokens()) {
       return null;
     }
