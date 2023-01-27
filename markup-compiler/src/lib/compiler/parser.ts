@@ -1,9 +1,4 @@
-import {
-  IASTIdentifierNode,
-  IASTNode,
-  IASTTextNode,
-  IASTTree,
-} from '../interfaces/ast';
+import { IASTNode, IASTTextNode, IASTTree } from '../interfaces/ast';
 import { Body } from './constants';
 import { Tokenizer } from './tokenizer';
 
@@ -31,6 +26,7 @@ export class Parser {
       const tagName = this._lookahead.value;
       this._eat('IDENTIFIER');
       this._eat('>');
+      //console.log('root', tagName);
       const body = this.getMarkup();
       this._eat('</');
       const endTagName = this._lookahead.value;
@@ -51,7 +47,11 @@ export class Parser {
     return false;
   };
 
-  private getMarkup = (tagName?: string): IASTNode[] | false => {
+  private getMarkup = (
+    tagName?: string,
+    level?: number
+  ): IASTNode[] | IASTTree | false => {
+    //console.log('getMarkup', tagName, level);
     if (!this._lookahead) {
       return false;
     }
@@ -66,9 +66,10 @@ export class Parser {
         this._eat('<');
         const tagName = this._lookahead.value;
         this._eat('IDENTIFIER');
-        this._eat('>', ['TEXT', '</']);
-        const markupBody = this.getMarkup(tagName);
-        console.log(markupBody);
+        this._eat('>', ['TEXT', '</', '<']);
+
+        const markupBody = this.getMarkup(tagName, (level ?? 0) + 1);
+        //console.log(tagName, markupBody);
         this._eat('</');
         const endTagName = this._lookahead.value;
         if (tagName !== endTagName) {
@@ -78,12 +79,25 @@ export class Parser {
         }
         this._eat('IDENTIFIER');
         this._eat('>');
-        if (markupBody) {
-          body = [...body, ...markupBody];
+        if (Array.isArray(markupBody)) {
+          body = [...body, ...(markupBody as unknown as IASTNode[])];
         } else {
-          throw new Error('Unexpected end of input, expected: "<".');
+          //throw new Error('Unexpected end of input, expected: "<".');
+          //body = markupBody as unknown as IASTTree;
+
+          return {
+            type: 'Markup',
+            tagName: tagName,
+            body: markupBody as unknown as IASTNode[] | IASTTree | false,
+          } as IASTTree;
         }
       }
+
+      return {
+        type: 'Markup',
+        tagName: tagName,
+        body: body as unknown as IASTNode[] | IASTTree | false,
+      } as IASTTree;
     } else {
       if (this._lookahead.type === '</' && tagName) {
         body = [

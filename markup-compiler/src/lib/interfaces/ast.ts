@@ -14,5 +14,5 @@ export interface IASTTextNode extends IASTNode {
 export interface IASTTree {
   type: string;
   tagName: string;
-  body: IASTNode[] | false;
+  body: IASTNode[] | IASTTree | false;
 }

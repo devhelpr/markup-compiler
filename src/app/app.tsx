@@ -6,7 +6,9 @@ import { useEffect, useState } from 'react';
 export function App() {
   const [result, setResult] = useState<string>('');
   useEffect(() => {
-    const ast = compileMarkup(`<div><h2>TITLE</h2><p>subtitle</p></div>`);
+    const ast = compileMarkup(
+      `<div><div><div><div><h2>TITLE</h2><p>subtitle</p></div></div></div></div>`
+    );
     console.log('ast', ast);
     if (ast) {
       setResult(JSON.stringify(ast, null, 2));
