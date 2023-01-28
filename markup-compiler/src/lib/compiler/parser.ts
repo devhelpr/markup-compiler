@@ -76,9 +76,8 @@ export class Parser {
         // <
 
         this._eat('<');
-        const tagName = this._lookahead.value;
-        currentTagName = tagName;
-
+        const grabbedTagName = this._lookahead.value;
+        currentTagName = grabbedTagName;
         this._eat('IDENTIFIER');
         const properties: IPropertyValue[] = [];
         while (this._lookahead && this._lookahead.type === 'IDENTIFIER') {
@@ -95,11 +94,10 @@ export class Parser {
             );
           }
         }
-        tagStack.push({ tagName, properties });
+        tagStack.push({ tagName: grabbedTagName, properties });
         this._eat('>', ['TEXT', '</', '<', null] as (string | null)[]);
 
         if (this._lookahead.type === 'TEXT') {
-          console.log('TEXT', currentTagName, this._lookahead.value);
           nodes.push({
             type: 'TEXT',
             tagName: currentTagName,
@@ -117,19 +115,22 @@ export class Parser {
           }
           this._eat('IDENTIFIER');
           this._eat('>');
-          if (tagStack.length === 0) {
+          if (
+            tagStack.length === 0 &&
+            (this._lookahead?.type === '</' || !this._lookahead)
+          ) {
             quit = true;
             if (nodes.length === 1 && nodes[0].type === 'TEXT') {
               return {
                 type: 'Markup',
-                tagName: poppedtag.tagName,
+                tagName: tagName ?? '',
                 properties: poppedtag.properties,
-                value: (nodes[0] as unknown as IASTTextNode).value,
+                body: [nodes[0]],
               };
             } else {
               return {
                 type: 'Markup',
-                tagName: poppedtag.tagName,
+                tagName: tagName ?? '',
                 properties: poppedtag.properties,
                 body: nodes,
               };
@@ -139,10 +140,8 @@ export class Parser {
           const markup = this.getMarkup(currentTagName, level ? level + 1 : 1);
           if (markup !== false) {
             if (Array.isArray(markup)) {
-              console.log(markup);
               nodes = [...nodes, ...markup];
             } else {
-              console.log(markup);
               nodes.push(markup);
             }
           }
@@ -158,7 +157,7 @@ export class Parser {
         }
         this._eat('IDENTIFIER');
         this._eat('>');
-        if (tagStack.length === 0) {
+        if (tagStack.length === 0 && this._lookahead?.type === '</') {
           quit = true;
           if (nodes.length === 1 && nodes[0].type === 'TEXT') {
             return {
@@ -175,6 +174,18 @@ export class Parser {
               body: nodes,
             };
           }
+        } else if (
+          !this._lookahead &&
+          tagStack.length === 0 &&
+          nodes.length === 0
+        ) {
+          quit = true;
+          return {
+            type: 'Markup',
+            tagName: poppedtag.tagName,
+            properties: poppedtag.properties,
+            body: [],
+          };
         }
       }
     }
