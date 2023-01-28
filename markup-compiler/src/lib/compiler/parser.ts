@@ -81,7 +81,7 @@ export class Parser {
           this._eat('IDENTIFIER');
           this._eat('=');
           if (this._lookahead.type === 'STRING') {
-            const value = this._lookahead.value;
+            const value = this._lookahead.value.slice(1, -1);
             this._eat('STRING');
             properties.push({ propertyName, value });
           } else {
