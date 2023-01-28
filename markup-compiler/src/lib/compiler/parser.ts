@@ -30,31 +30,27 @@ export class Parser {
     if (this._tokenizer) {
       this._tokenizer.init(this._string);
       this._lookahead = this._tokenizer.getNextToken();
-      return this.getMarkup() as unknown as IASTTree;
+      const result = this.getMarkup();
+      if (Array.isArray(result) && result.length > 1) {
+        throw new Error('Invalid markup, only one root element allowed');
+      } else if (Array.isArray(result) && result.length === 1) {
+        return result[0] as unknown as IASTTree;
+      }
+      if (
+        !(result as unknown as IASTTree).tagName &&
+        (result as unknown as IASTTree).body &&
+        Array.isArray((result as unknown as IASTTree).body) &&
+        ((result as unknown as IASTTree).body as unknown as IASTNode[])
+          .length === 1
+      ) {
+        return (
+          (result as unknown as IASTTree).body as unknown as IASTNode[]
+        )[0] as unknown as IASTTree;
+      }
+      return result as unknown as IASTTree;
     }
     return false;
   };
-  /*
-      <div>
-        <div>
-          <div>test</div>
-          <div>test</div>
-        </div>
-        <p>test</p>
-      </div>
-
-      <div>test</div>
-
-      <div>
-        <div>test</div>
-      </div>
-
-      <div>
-        <div>test</div>
-        <div>test</div>
-      </div>
-
-  */
 
   private getMarkup = (
     tagName?: string,
