@@ -1,25 +1,16 @@
-export interface IASTNode {
-  type: string;
-  tagName: string;
-  properties?: IPropertyValue[];
-}
-
-export interface IASTIdentifierNode extends IASTNode {
-  name: string;
-}
-
-export interface IASTTextNode extends IASTNode {
-  value: string;
-}
-
 export interface IASTTree {
-  type: string;
-  tagName: string;
-  properties?: IPropertyValue[];
-  body: IASTNode[] | IASTTree | false;
+  body: IASTTreeNode;
 }
 
-export interface IPropertyValue {
+export interface IASTTreeNode {
+  type: 'Markup' | 'TEXT' | 'EXPRESSION';
+  tagName: string;
+  properties?: IASTTreeProperty[];
+  body?: IASTTreeNode[];
+  value?: string;
+}
+
+export interface IASTTreeProperty {
   propertyName: string;
   value: string;
 }

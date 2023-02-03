@@ -19,5 +19,5 @@ npm run test @devhelpr/markup-compiler
 
 # TODO
 - [ ] support for self-closing tags like <br/> or <br />
-- [ ] support for attributes
-- [ ] deeper nesting of tags
+- [ ] support for other characters in text like ! or ? etc...
+- [ ] full support for jsx spec: https://facebook.github.io/jsx/

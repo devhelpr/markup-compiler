@@ -29,7 +29,7 @@ const Specifcation: any[] = [
   // strings
   [/^"[^"]*"/, 'STRING'],
   [/^'[^']*'/, 'STRING'],
-  [/^[^<>]*/, 'TEXT'],
+  [/^[^<>{}]*/, 'TEXT'],
 ];
 
 export interface IToken {
