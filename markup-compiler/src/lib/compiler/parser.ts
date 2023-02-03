@@ -53,17 +53,17 @@ export class Parser {
         this._eat('IDENTIFIER');
         const properties = this.parseProperties();
         if (this._lookahead && this._lookahead.type === '>') {
-          this._eat('>', ['TEXT', '</', '<', '{', '}', null] as (
-            | string
-            | null
-          )[]);
+          this._eat('>', ['TEXT', '</', '<', '{', '}'] as (string | null)[]);
 
           const childNodes = this.parseMarkupChildren();
           if (childNodes) {
             this._eat('</');
             const closingTagName = this._lookahead.value;
             this._eat('IDENTIFIER');
-            this._eat('>');
+            this._eat('>', ['TEXT', '</', '<', '{', '}', null] as (
+              | string
+              | null
+            )[]);
             if (tagName !== closingTagName) {
               throw new Error(
                 `Invalid markup, expected closing tag for ${tagName}, found ${closingTagName}`
@@ -92,7 +92,10 @@ export class Parser {
       const propertyName = this._lookahead.value;
       this._eat('IDENTIFIER');
       this._eat('=');
-      if (this._lookahead.type === 'STRING') {
+      if (this._lookahead.type === '{') {
+        const value = this.parseExpression(true);
+        properties.push({ propertyName, value, isASTTreeNode: true });
+      } else if (this._lookahead.type === 'STRING') {
         const value = this._lookahead.value.slice(1, -1);
         this._eat('STRING');
         properties.push({ propertyName, value });
@@ -119,12 +122,22 @@ export class Parser {
   parseMarkupChildren = (): IASTTreeNode[] => {
     const nodes: IASTTreeNode[] = [];
     while (this._lookahead && this._lookahead.type !== '</') {
-      if (this._lookahead.type === 'TEXT') {
+      if (this._lookahead.type === 'IDENTIFIER') {
         nodes.push({
           type: 'TEXT',
           tagName: '',
           value: this._lookahead.value,
         });
+        this._eat('IDENTIFIER');
+      } else if (this._lookahead.type === 'TEXT') {
+        const text = this._lookahead.value.trim();
+        if (text) {
+          nodes.push({
+            type: 'TEXT',
+            tagName: '',
+            value: text,
+          });
+        }
         this._eat('TEXT');
       } else if (this._lookahead.type === '<') {
         nodes.push(this.parseMarkup());
@@ -137,13 +150,17 @@ export class Parser {
     return nodes;
   };
 
-  parseExpression = (): IASTTreeNode => {
+  parseExpression = (isExpressionProperty = false): IASTTreeNode => {
     this._eat('{', ['TEXT']);
 
     const expression = this._lookahead.value;
 
     this._eat('TEXT');
-    this._eat('}', ['TEXT', '</', '<', '{', '}', null] as (string | null)[]);
+    if (isExpressionProperty) {
+      this._eat('}', ['TEXT', '{', '}', '>', null] as (string | null)[]);
+    } else {
+      this._eat('}', ['TEXT', '</', '<', '{', '}', null] as (string | null)[]);
+    }
     return {
       type: 'EXPRESSION',
       tagName: '',

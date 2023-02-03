@@ -12,5 +12,6 @@ export interface IASTTreeNode {
 
 export interface IASTTreeProperty {
   propertyName: string;
-  value: string;
+  isASTTreeNode?: boolean;
+  value: string | IASTTreeNode;
 }

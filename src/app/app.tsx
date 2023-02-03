@@ -6,13 +6,13 @@ import { useEffect, useState } from 'react';
 export function App() {
   const [result, setResult] = useState<string>('');
   useEffect(() => {
-    // const ast2 = compileMarkup(`
+    // const ast = compileMarkup(`
     // <div></div>`);
 
-    // const ast2 = compileMarkup(`
+    // const ast = compileMarkup(`
     // <div>test</div>`);
 
-    // const ast2 = compileMarkup(`
+    // const ast = compileMarkup(`
     // <div>
     //   <div>
     //     <div>
@@ -31,7 +31,7 @@ export function App() {
     //   `<div1><div2><p>hello</p></div2><h2>TITLE</h2></div1>`
     // );
 
-    // const ast2 = compileMarkup(
+    // const ast = compileMarkup(
     //   `<div class="bg-black" >
     //     <div>
     //       <div>
@@ -47,22 +47,23 @@ export function App() {
     //   </div>`
     // );
 
-    const ast2 = compileMarkup(`<Dropdown>
-      <Menu>
-        <MenuItem>Do{xyz}Something</MenuItem>
-        <MenuItem>test{test}test</MenuItem>
-        <MenuItem>Do Something Else</MenuItem>
-      </Menu>
-    </Dropdown>`);
+    // const ast = compileMarkup(`<Dropdown>
+    //   <Menu>
+    //   test
+    //     <MenuItem>Do{xyz}Something</MenuItem>
+    //     <MenuItem helper={a+b} test="value">test{test}test</MenuItem>
+    //     <MenuItem>Do Something Else</MenuItem>
+    //   </Menu>
+    // </Dropdown>`);
 
-    // ${ast && JSON.stringify(ast, null, 2)}
-    //console.log('ast', ast);
-    if (ast2) {
-      setResult(`
+    const ast = compileMarkup(`<div>
 
-      ${ast2 && JSON.stringify(ast2, null, 2)}
-      
-      `);
+    test test
+      <p>paragraph</p>
+    </div>`);
+
+    if (ast) {
+      setResult(`${ast && JSON.stringify(ast, null, 2)}`);
     } else {
       setResult('error parsing');
     }
