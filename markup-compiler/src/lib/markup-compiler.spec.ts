@@ -45,10 +45,57 @@ describe('MarkupCompiler', () => {
   });
 
   it('should not return valid ast trees', () => {
-    expect(compileMarkup('<markup></test>')).toBeFalsy();
-    expect(compileMarkup('<123markup></123markup>')).toBeFalsy();
-    expect(compileMarkup('<markup><test></test>')).toBeFalsy();
-    expect(compileMarkup('<markup><test>hello')).toBeFalsy();
-    expect(compileMarkup('<markup><test>123hello')).toBeFalsy();
+    expect(() => compileMarkup('<markup></test>')).toThrow();
+    expect(() => compileMarkup('<123markup></123markup>')).toThrow();
+    expect(() => compileMarkup('<markup><test></test>')).toThrow();
+    expect(() => compileMarkup('<markup><test>hello')).toThrow();
+    expect(() => compileMarkup('<markup><test>123hello')).toThrow();
+  });
+
+  it('should return valid ast tree', () => {
+    const ast = compileMarkup('<markup><test>hello</test></markup>');
+    expect(ast).toBeTruthy();
+    if (
+      ast &&
+      ast.body.body &&
+      ast.body.body.length === 1 &&
+      ast.body.body[0].body &&
+      ast.body.body[0].body.length === 1
+    ) {
+      expect(ast.body.tagName).toBe('markup');
+      expect(ast.body.body[0].tagName).toBe('test');
+      expect(ast.body.body[0].body[0].value).toBe('hello');
+    } else {
+      expect(true).toBe(false);
+    }
+  });
+
+  it('should return valid ast tree with a property', () => {
+    const ast = compileMarkup(`<markup abc="def">hello</markup>`);
+    expect(ast).toBeTruthy();
+    if (
+      ast &&
+      ast.body &&
+      ast.body.properties &&
+      ast.body.properties.length === 1
+    ) {
+      expect(ast.body.tagName).toBe('markup');
+      expect(ast.body.properties[0].propertyName).toBe('abc');
+      expect(ast.body.properties[0].value).toBe('def');
+    } else {
+      expect(true).toBe(false);
+    }
+  });
+
+  it('should return valid ast tree with an expression', () => {
+    const ast = compileMarkup(`<markup>{hello}</markup>`);
+    expect(ast).toBeTruthy();
+    if (ast && ast.body.body && ast.body.body.length === 1) {
+      expect(ast.body.tagName).toBe('markup');
+      expect(ast.body.body[0].type).toBe('EXPRESSION');
+      expect(ast.body.body[0].value).toBe('hello');
+    } else {
+      expect(true).toBe(false);
+    }
   });
 });

@@ -5,7 +5,8 @@ export function compileMarkup(markup: string) {
     const markupParser = new Parser();
     return markupParser.parse(markup);
   } catch (error) {
-    console.error(error);
-    return false;
+    //console.error(error);
+    //return false;
+    throw new Error(error as string);
   }
 }

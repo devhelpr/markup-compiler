@@ -55,16 +55,19 @@ export function App() {
     //     <MenuItem>Do Something Else</MenuItem>
     //   </Menu>
     // </Dropdown>`);
+    try {
+      const ast = compileMarkup(`<markup></test>`);
 
-    const ast = compileMarkup(`<div>
+      // <div>
 
-    test test
-      <p>paragraph</p>
-    </div>`);
+      // test test
+      //   <p>paragraph</p>
+      // </div>`);
 
-    if (ast) {
-      setResult(`${ast && JSON.stringify(ast, null, 2)}`);
-    } else {
+      if (ast) {
+        setResult(`${ast && JSON.stringify(ast, null, 2)}`);
+      }
+    } catch {
       setResult('error parsing');
     }
   }, []);
