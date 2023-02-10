@@ -38,8 +38,11 @@ export class Parser {
     return false;
   };
 
-  getLeftOverString = () => {
-    return this._tokenizer?.getLeftOverString() || '';
+  getLeftOverAfterParsing = () => {
+    return {
+      lookahead: this._lookahead,
+      leftOverString: this._tokenizer?.getLeftOverString() || '',
+    };
   };
 
   /*

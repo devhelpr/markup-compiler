@@ -76,7 +76,7 @@ export class Tokenizer {
   };
 
   getLeftOverString = () => {
-    return this.string;
+    return this.string.slice(this.cursor);
   };
 
   private match = (regexp: RegExp, string: string) => {
