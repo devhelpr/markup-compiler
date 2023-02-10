@@ -75,6 +75,10 @@ export class Tokenizer {
     throw new SyntaxError(`Unexpected token: "${string[0]}"`);
   };
 
+  getLeftOverString = () => {
+    return this.string;
+  };
+
   private match = (regexp: RegExp, string: string) => {
     const matched = regexp.exec(string);
     if (matched == null) {

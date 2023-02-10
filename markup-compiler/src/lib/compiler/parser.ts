@@ -38,6 +38,10 @@ export class Parser {
     return false;
   };
 
+  getLeftOverString = () => {
+    return this._tokenizer?.getLeftOverString() || '';
+  };
+
   /*
     1. parse open tag (identifier, optional properties and closing >)
         parse children

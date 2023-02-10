@@ -19,11 +19,12 @@ npm run test @devhelpr/markup-compiler
 
 # TODO
 
-- [ ]BUG - "text text" with whitespace is split when reading as child nodes.
-            ... removing the null includes enters in the text value
-
-- [ ] support for properties where the value is an expression like: {...}
+- [ ] combining markup/jsx parser and expression-compier
+        .. in such a way that expressions in markup can contain { } without escaping them
+        .. the expression compiler should be in the lead .. and markup parsing should be optional!
+     
 - [ ] improved unit testing for the parsing result/ast...
 - [ ] support for self-closing tags like <br/> or <br />
 - [ ] support for other characters in text like ! or ? etc...
 - [ ] full support for jsx spec: https://facebook.github.io/jsx/
+

@@ -98,4 +98,14 @@ describe('MarkupCompiler', () => {
       expect(true).toBe(false);
     }
   });
+
+  it('shouldnt return valid ast tree when not starting with a tag', () => {
+    const ast = compileMarkup(`test<markup>test</markup>`);
+    expect(ast).toBeFalsy();
+  });
+
+  it('should return valid ast tree when random tokens after closing tag', () => {
+    const ast = compileMarkup(`<markup>test</markup>test`);
+    expect(ast).toBeTruthy();
+  });
 });

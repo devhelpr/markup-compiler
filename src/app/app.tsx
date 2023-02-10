@@ -56,7 +56,7 @@ export function App() {
     //   </Menu>
     // </Dropdown>`);
     try {
-      const ast = compileMarkup(`<markup></test>`);
+      const ast = compileMarkup(`<markup></markup>test`);
 
       // <div>
 
