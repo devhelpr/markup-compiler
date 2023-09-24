@@ -109,3 +109,13 @@ describe('MarkupCompiler', () => {
     expect(ast).toBeTruthy();
   });
 });
+
+/*
+  <for:each items={list} as="item">
+    <div>{listItem}</div>
+  </for:each>
+
+  compileMarkup(html, list)
+  
+  
+*/

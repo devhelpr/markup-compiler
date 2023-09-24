@@ -6,6 +6,7 @@ export class Parser {
   _string = '';
   _tokenizer: Tokenizer | null = null;
   _lookahead: any = null;
+  _isInScriptOrStyle = false;
 
   _currentFunction: string = Body;
 
@@ -57,31 +58,59 @@ export class Parser {
       this._eat('<');
       if (this._lookahead && this._lookahead.type === 'IDENTIFIER') {
         const tagName = this._lookahead.value;
+        if (tagName === 'style' || tagName === 'script') {
+          this._isInScriptOrStyle = true;
+        }
         this._eat('IDENTIFIER');
         const properties = this.parseProperties();
         if (this._lookahead && this._lookahead.type === '>') {
           this._eat('>', ['TEXT', '</', '<', '{', '}'] as (string | null)[]);
+          if (this._isInScriptOrStyle) {
+            this._isInScriptOrStyle = false;
 
-          const childNodes = this.parseMarkupChildren();
-          if (childNodes) {
-            this._eat('</');
-            const closingTagName = this._lookahead.value;
-            this._eat('IDENTIFIER');
-            this._eat('>', ['TEXT', '</', '<', '{', '}', null] as (
-              | string
-              | null
-            )[]);
-            if (tagName !== closingTagName) {
-              throw new Error(
-                `Invalid markup, expected closing tag for ${tagName}, found ${closingTagName}`
-              );
+            const childNodes = this.parseMarkupScriptOrStyleChild();
+            if (childNodes) {
+              this._eat('</');
+              const closingTagName = this._lookahead.value;
+              this._eat('IDENTIFIER');
+              this._eat('>', ['TEXT', '</', '<', '{', '}', null] as (
+                | string
+                | null
+              )[]);
+              if (tagName !== closingTagName) {
+                throw new Error(
+                  `Invalid markup, expected closing tag for ${tagName}, found ${closingTagName}`
+                );
+              }
+              return {
+                type: 'Markup',
+                tagName,
+                properties,
+                body: childNodes,
+              };
             }
-            return {
-              type: 'Markup',
-              tagName,
-              properties,
-              body: childNodes,
-            };
+          } else {
+            const childNodes = this.parseMarkupChildren();
+            if (childNodes) {
+              this._eat('</');
+              const closingTagName = this._lookahead.value;
+              this._eat('IDENTIFIER');
+              this._eat('>', ['TEXT', '</', '<', '{', '}', null] as (
+                | string
+                | null
+              )[]);
+              if (tagName !== closingTagName) {
+                throw new Error(
+                  `Invalid markup, expected closing tag for ${tagName}, found ${closingTagName}`
+                );
+              }
+              return {
+                type: 'Markup',
+                tagName,
+                properties,
+                body: childNodes,
+              };
+            }
           }
         } else {
           throw new Error('Invalid markup, expected closing >');
@@ -99,7 +128,7 @@ export class Parser {
       const propertyName = this._lookahead.value;
       this._eat('IDENTIFIER');
       this._eat('=');
-      if (this._lookahead.type === '{') {
+      if (!this._isInScriptOrStyle && this._lookahead.type === '{') {
         const value = this.parseExpression(true);
         properties.push({ propertyName, value, isASTTreeNode: true });
       } else if (this._lookahead.type === 'STRING') {
@@ -157,6 +186,45 @@ export class Parser {
     return nodes;
   };
 
+  parseMarkupScriptOrStyleChild = (): IASTTreeNode[] => {
+    const nodes: IASTTreeNode[] = [];
+    let code = '';
+    while (this._lookahead && this._lookahead.type !== '</') {
+      if (this._lookahead.type === 'IDENTIFIER') {
+        code += this._lookahead.value;
+
+        this._eat('IDENTIFIER');
+      } else if (this._lookahead.type === 'TEXT') {
+        code += this._lookahead.value.trim();
+
+        this._eat('TEXT');
+      } else if (this._lookahead.type === '<') {
+        code += '<';
+        this._eat('<');
+      } else if (this._lookahead.type === '>') {
+        code += '>';
+        this._eat('>');
+      } else if (this._lookahead.type === '{') {
+        code += this._lookahead.value;
+        this._eat('{');
+      } else if (this._lookahead.type === '}') {
+        code += this._lookahead.value;
+        this._eat('}');
+      } else {
+        code += this._lookahead.value;
+        this._eat(this._lookahead.type);
+        // throw new Error(
+        //   `Invalid markup in parseMarkupScriptOrStyleChild, unexpected token ${this._lookahead.type}`
+        // );
+      }
+    }
+    nodes.push({
+      type: 'TEXT',
+      tagName: '',
+      value: code,
+    });
+    return nodes;
+  };
   parseExpression = (isExpressionProperty = false): IASTTreeNode => {
     this._eat('{', ['TEXT']);
 

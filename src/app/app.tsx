@@ -56,7 +56,13 @@ export function App() {
     //   </Menu>
     // </Dropdown>`);
     try {
-      const ast = compileMarkup(`<markup></markup>test`);
+      const ast = compileMarkup(
+        `<markup><style>.text{color:red};</style><div>text in div</div> <script>
+        if (hello < 100) {
+          console.log('hello');
+        }
+      </script></markup>`
+      );
 
       // <div>
 
@@ -67,7 +73,8 @@ export function App() {
       if (ast) {
         setResult(`${ast && JSON.stringify(ast, null, 2)}`);
       }
-    } catch {
+    } catch (err) {
+      console.log(err);
       setResult('error parsing');
     }
   }, []);
